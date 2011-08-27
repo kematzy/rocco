@@ -368,8 +368,26 @@ class Rocco
   # Markdown syntax.
   def docblock(docs)
     docs.map do |doc|
+      
+      # TODO: catch <code></code> blocks
+      
       doc.split("\n").map do |line|
-        line.match(/^@\w+/) ? line.sub(/^@(\w+)\s+/, '> **\1** ')+"  " : line
+        
+        if line.match(/^@\w+\s+\(\w+\/?\w*\)\s+\$?\w+/)  # handle @param (int) $var_name
+          line.sub(/^@(\w+)\s+\(?(\w+\/?\w*)?\)?\s+(\$?\w+)/, '+  **\1** (\2) - \3')+"  "
+          
+        elsif line.match(/^@\w+\s+\(?\w+\/?\w*\)?\s+\$?\w+/)  # handle @param int $var_name
+          line.sub(/^@(\w+)\s+\(?(\w+\/?\w*)?\)?\s+(\$?\w+)/, '+  **\1** (\2) - \3')+"  "
+            
+        elsif line.match(/^@\w+\s+\w+\s+\w+/) # handle @param int var_name
+          line.sub(/^@(\w+)\s+(\w+\/?\w*)?\s*/, '+  **\1** (\2) - ')+"  "
+          
+        elsif line.match(/^@\w+\s+\(?(.*)\)?/) # handle @return int
+          line.sub(/^@(\w+)\s+\(?([a-zA-Z0-9\/-_\?]+)?\)?\s*/, '+  **\1** (\2) ')+"  "
+          
+        else 
+          line
+        end
       end.join("\n")
     end
   end
